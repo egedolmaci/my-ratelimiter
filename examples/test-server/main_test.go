@@ -1,4 +1,4 @@
-package testserver
+package main
 
 import (
 	"net/http"
@@ -85,7 +85,7 @@ func TestIntegrationWithMiddleware(t *testing.T) {
 		server.ServeHTTP(res, req)
 		server.ServeHTTP(res2, req2)
 
-		if res2.Code != http.StatusTooManyRequests {
+		if res2.Code != http.StatusTooManyRequests{
 			t.Errorf("Status must be 429 got %d", res.Code)
 		}
 	})
