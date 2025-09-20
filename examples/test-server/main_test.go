@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/egedolmaci/my-ratelimiter/internal/ratelimiter"
 	"github.com/egedolmaci/my-ratelimiter/pkg/middleware"
 )
 
@@ -61,11 +62,12 @@ func TestIntegrationWithMiddleware(t *testing.T) {
 		w.Write([]byte("rate limited"))
 
 	})
-	rateLimitedHandler := middleware.RateLimitMiddleware(handler, 2, time.Minute)
-	server.mux.HandleFunc("/ratelimited", rateLimitedHandler)
+	middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(2, time.Minute)}
+	ratelimitedHandler := middleware.RateLimitMiddleware(handler)
+	server.mux.HandleFunc("/test-ratelimited", ratelimitedHandler)
 
 	t.Run("single request to server", func(t *testing.T) {
-		req := httptest.NewRequest("GET", "/ratelimited", nil)
+		req := httptest.NewRequest("GET", "/test-ratelimited", nil)
 		res := httptest.NewRecorder()
 
 		server.ServeHTTP(res, req)
@@ -76,10 +78,10 @@ func TestIntegrationWithMiddleware(t *testing.T) {
 	})
 
 	t.Run("double request to server", func(t *testing.T) {
-		req := httptest.NewRequest("GET", "/ratelimited", nil)
+		req := httptest.NewRequest("GET", "/test-ratelimited", nil)
 		res := httptest.NewRecorder()
 
-		req2 := httptest.NewRequest("GET", "/ratelimited", nil)
+		req2 := httptest.NewRequest("GET", "/test-ratelimited", nil)
 		res2 := httptest.NewRecorder()
 
 		server.ServeHTTP(res, req)
@@ -98,13 +100,14 @@ func TestIntegrationWithMiddlewareAdvanced(t *testing.T) {
 			w.Write([]byte("rate limited"))
 
 		})
-		rateLimitedHandler := middleware.RateLimitMiddleware(handler, 3, time.Minute)
-		server.mux.HandleFunc("/ratelimited", rateLimitedHandler)
+		middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(3, time.Minute)}
+		ratelimitedHandler := middleware.RateLimitMiddleware(handler)
+		server.mux.HandleFunc("/test-ratelimited", ratelimitedHandler)
 
 		t.Run("3 requests to server with limit 3 4th should fail", func(t *testing.T) {
 			i := 0
 			for {
-				req := httptest.NewRequest("GET", "/ratelimited", nil)
+				req := httptest.NewRequest("GET", "/test-ratelimited", nil)
 				res := httptest.NewRecorder()
 
 				server.ServeHTTP(res, req)
@@ -115,7 +118,7 @@ func TestIntegrationWithMiddlewareAdvanced(t *testing.T) {
 				}
 
 			}
-			req := httptest.NewRequest("GET", "/ratelimited", nil)
+			req := httptest.NewRequest("GET", "/test-ratelimited", nil)
 			res := httptest.NewRecorder()
 
 			server.ServeHTTP(res, req)
