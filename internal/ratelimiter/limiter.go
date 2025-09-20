@@ -10,12 +10,13 @@ type Ratelimiter struct {
 
 type WindowData struct {
 	count int
+	timestamp time.Time
 }
 
 func (r *Ratelimiter) IsRequestAllowed(identifier string) bool {
 	data, exists := r.storage[identifier]
-	if !exists {
-		r.storage[identifier] = WindowData{count: 1}
+	if !exists || time.Now().After(data.timestamp.Add(r.windowSize)) {
+		r.storage[identifier] = WindowData{count: 1, timestamp: time.Now()}
 		return true
 	}
 
@@ -35,3 +36,4 @@ func NewRateLimiter(limit int, windowSize time.Duration) *Ratelimiter {
 		windowSize: windowSize,
 	}
 }
+
