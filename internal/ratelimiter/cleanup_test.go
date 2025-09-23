@@ -7,42 +7,39 @@ import (
 )
 
 func TestCleanup(t *testing.T) {
-	rt := NewRateLimiter(1, time.Millisecond * 100)
-	defer rt.Stop()
+    strategy := NewFixedWindowStrategy(1, time.Millisecond * 100)
+    defer strategy.Stop()
 
-	for i := 0; i < 100; i++ {
-		identifier := fmt.Sprintf("user-%d", i)
-		rt.IsRequestAllowed(identifier)
-	}
-	
-	time.Sleep(time.Millisecond * 300)
-	
-	expectedSize := 0
-	mapSize := rt.GetStorageSize()
+    strategy.IsRequestAllowed("user1")
 
-	if expectedSize != mapSize {
-		t.Errorf("storage of the rate limiter must be cleaned up after window expires, expected %d, got %d", expectedSize, mapSize)
-	}
+    if strategy.GetStorageSize() != 1 {
+        t.Error("Should have 1 entry")
+    }
+
+    time.Sleep(time.Millisecond * 250)
+
+    if strategy.GetStorageSize() != 0 {
+        t.Error("Should be cleaned up")
+    }
 }
 
+
 func TestCleanupDoesNotAffectActiveRequests(t *testing.T) {
-	rt := NewRateLimiter(1, time.Millisecond* 100)
-	defer rt.Stop()
+    strategy := NewFixedWindowStrategy(10, time.Millisecond * 100)
+    defer strategy.Stop()
 
 	for i := 0; i < 10; i++ {
-		rt.IsRequestAllowed(fmt.Sprintf("old-user-%d", i))
+    	strategy.IsRequestAllowed(fmt.Sprintf("old-user-%d", i))
 	}
 
-	time.Sleep(time.Millisecond * 300)
-	rt.cleanup()
+	
 
-	rt.IsRequestAllowed("user-ege")
-	rt.IsRequestAllowed("user-ece")
+    time.Sleep(time.Millisecond * 250)
 
-	expected := 2
-	got := rt.GetStorageSize()
 
-	if got != expected {
-		t.Errorf("after cleaning up there must be 2 entries left, got %d expected %d", got, expected)
-	}
+	strategy.IsRequestAllowed("new-user-ege")
+
+    if strategy.GetStorageSize() != 1 {
+        t.Error("Should have 1 entry")
+    }
 }
