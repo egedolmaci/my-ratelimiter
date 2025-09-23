@@ -63,6 +63,7 @@ func TestIntegrationWithMiddleware(t *testing.T) {
 
 	})
 	middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(2, time.Minute)}
+	defer middleware.Ratelimiter.Stop()
 	ratelimitedHandler := middleware.RateLimitMiddleware(handler)
 	server.mux.HandleFunc("/test-ratelimited", ratelimitedHandler)
 
@@ -101,6 +102,7 @@ func TestIntegrationWithMiddlewareAdvanced(t *testing.T) {
 
 		})
 		middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(3, time.Minute)}
+		defer middleware.Ratelimiter.Stop()
 		ratelimitedHandler := middleware.RateLimitMiddleware(handler)
 		server.mux.HandleFunc("/test-ratelimited", ratelimitedHandler)
 

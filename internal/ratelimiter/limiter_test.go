@@ -28,6 +28,7 @@ func TestIsRequestAllowed(t *testing.T) {
 
 	t.Run("1 request fills limit and limit opens up for another", func(t *testing.T) {
 		rt := NewRateLimiter(1, time.Millisecond*100)
+		defer rt.Stop()
 		rt.IsRequestAllowed("user123")
 
 		time.Sleep(150 * time.Millisecond)
@@ -40,6 +41,7 @@ func TestIsRequestAllowed(t *testing.T) {
 	})
 	t.Run("1 request fills the limit and since enough time has not passed limit is full", func(t *testing.T) {
 		rt := NewRateLimiter(1, time.Millisecond*100)
+		defer rt.Stop()
 		rt.IsRequestAllowed("user123")
 
 		time.Sleep(10 * time.Millisecond)
@@ -55,6 +57,7 @@ func TestIsRequestAllowed(t *testing.T) {
 
 func TestNewRatelimiter(t *testing.T) {
 	rt := NewRateLimiter(10, time.Minute)
+	defer rt.Stop()
 
 	if rt.limit != 10 {
 		t.Errorf("Expected limit 10, got %d", rt.limit)

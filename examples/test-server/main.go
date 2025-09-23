@@ -17,6 +17,7 @@ type Server struct {
 
 func NewServer() *Server {
 	rl := ratelimiter.NewRateLimiter(10, time.Minute)
+	defer rl.Stop()
 	s := &Server{
 		mux: http.NewServeMux(),
 		middleware: middleware.Middleware{Ratelimiter: rl},

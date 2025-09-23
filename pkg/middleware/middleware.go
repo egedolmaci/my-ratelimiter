@@ -8,6 +8,8 @@ import (
 
 type Limiter interface {
 	IsRequestAllowed(identifier string) (bool, int) 
+	GetStorageSize() int
+	Stop()
 }
 
 type Middleware struct {
