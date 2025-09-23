@@ -1,11 +1,15 @@
 package ratelimiter
 
-import "time"
+import (
+	"sync"
+	"time"
+)
 
 type Ratelimiter struct {
 	limit      int
 	storage    map[string]WindowData
 	windowSize time.Duration
+	mu sync.RWMutex
 }
 
 type WindowData struct {
@@ -14,6 +18,8 @@ type WindowData struct {
 }
 
 func (r *Ratelimiter) IsRequestAllowed(identifier string) (bool, int) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	data, exists := r.storage[identifier]
 	if !exists || time.Now().After(data.timestamp.Add(r.windowSize)) {
 		r.storage[identifier] = WindowData{count: 1, timestamp: time.Now()}

@@ -12,7 +12,7 @@ func TestConcurrentAccess(t *testing.T) {
 	iters := 10000
 	identifier := "127.0.0.1:1000"
 
-	ratelimiter := NewRateLimiter(limit, time.Millisecond * 1)
+	ratelimiter := NewRateLimiter(limit, time.Second)
 
 	allowedChan := make(chan bool)
 	startChan := make(chan struct{})
