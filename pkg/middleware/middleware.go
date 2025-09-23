@@ -26,7 +26,7 @@ func (m *Middleware) RateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc
 		identifier := host
 
 		if allowed, remainingLimit := m.Ratelimiter.IsRequestAllowed(identifier); allowed {
-			w.Write([]byte(fmt.Sprintf("Remaining limit = %d", remainingLimit)))
+			w.Write([]byte(fmt.Sprintf("Remaining limit = %d\n", remainingLimit)))
 			next.ServeHTTP(w, r)
 		} else {
 			http.Error(w, "Too Many Requests", http.StatusTooManyRequests)

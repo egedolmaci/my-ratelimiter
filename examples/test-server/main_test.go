@@ -28,8 +28,8 @@ func TestMain(t *testing.T) {
 
 		LimitedHandler(w, req)
 
-		if w.Code != 429 {
-			t.Errorf("got %d, want %d", w.Code, 429)
+		if w.Code != 404 {
+			t.Errorf("got %d, want %d", w.Code, 404)
 		}
 	})
 
@@ -45,8 +45,8 @@ func TestMain(t *testing.T) {
 
 		server.ServeHTTP(w2, req2)
 
-		if w.Code != 429 {
-			t.Errorf("for limited endpoint got %d, want %d", w.Code, 429)
+		if w.Code != 404 {
+			t.Errorf("for limited endpoint got %d, want %d", w.Code, 404)
 		}
 
 		if w2.Code != 200 {

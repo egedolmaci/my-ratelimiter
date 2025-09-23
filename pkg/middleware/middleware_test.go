@@ -69,7 +69,7 @@ func TestMiddlewareLimit(t *testing.T) {
 		rec := httptest.NewRecorder()
 		next.ServeHTTP(rec, req)
 
-		expected := "Remaining limit = 9"
+		expected := "Remaining limit = 9\n"
 		got := rec.Body.String()
 
 		if got != expected {
@@ -93,7 +93,7 @@ func TestMiddlewareLimit(t *testing.T) {
 		rec2 := httptest.NewRecorder()
 		next.ServeHTTP(rec2, req2)
 
-		expected := "Remaining limit = 8"
+		expected := "Remaining limit = 8\n"
 		got := rec2.Body.String()
 
 		if got != expected {

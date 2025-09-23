@@ -3,13 +3,13 @@ package ratelimiter
 import "time"
 
 type Ratelimiter struct {
-	limit   int
-	storage map[string]WindowData
+	limit      int
+	storage    map[string]WindowData
 	windowSize time.Duration
 }
 
 type WindowData struct {
-	count int
+	count     int
 	timestamp time.Time
 }
 
@@ -31,10 +31,8 @@ func (r *Ratelimiter) IsRequestAllowed(identifier string) (bool, int) {
 
 func NewRateLimiter(limit int, windowSize time.Duration) *Ratelimiter {
 	return &Ratelimiter{
-		limit: limit,
-		storage: map[string]WindowData{},
+		limit:      limit,
+		storage:    map[string]WindowData{},
 		windowSize: windowSize,
 	}
 }
-
-
