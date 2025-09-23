@@ -16,7 +16,9 @@ func TestRateLimitMiddleware(t *testing.T) {
 			w.Write([]byte("success"))
 		}
 
-		middleware := Middleware{Ratelimiter: ratelimiter.NewRateLimiter(1, time.Minute)}
+		rl := ratelimiter.NewRateLimiter(1, time.Minute)
+		defer rl.Stop()
+		middleware := Middleware{Ratelimiter: rl}
 
 		next := middleware.RateLimitMiddleware(handler)
 
@@ -36,7 +38,9 @@ func TestRateLimitMiddleware(t *testing.T) {
 			w.Write([]byte("success"))
 		}
 
-		middleware := Middleware{Ratelimiter: ratelimiter.NewRateLimiter(1, time.Minute)}
+		rl := ratelimiter.NewRateLimiter(1, time.Minute)
+		defer rl.Stop()
+		middleware := Middleware{Ratelimiter: rl}
 
 		next := middleware.RateLimitMiddleware(handler)
 
@@ -61,7 +65,9 @@ func TestMiddlewareLimit(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		}
 
-		middleware := Middleware{Ratelimiter: ratelimiter.NewRateLimiter(10, time.Minute)}
+		rl := ratelimiter.NewRateLimiter(10, time.Minute)
+		defer rl.Stop()
+		middleware := Middleware{Ratelimiter: rl}
 
 		next := middleware.RateLimitMiddleware(handler)
 
@@ -81,7 +87,9 @@ func TestMiddlewareLimit(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		}
 
-		middleware := Middleware{Ratelimiter: ratelimiter.NewRateLimiter(10, time.Minute)}
+		rl := ratelimiter.NewRateLimiter(10, time.Minute)
+		defer rl.Stop()
+		middleware := Middleware{Ratelimiter: rl}
 
 		next := middleware.RateLimitMiddleware(handler)
 
