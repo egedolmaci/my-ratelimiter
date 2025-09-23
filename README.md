@@ -26,10 +26,11 @@ my-ratelimiter/
 
 ## 🧪 Test-Driven Development (TDD)
 
-**21 comprehensive tests** across 3 test suites demonstrate rigorous TDD approach:
+**22 comprehensive tests** across 3 test suites demonstrate rigorous TDD approach:
 
 ### Test Coverage
 - **Unit Tests**: Core rate limiting algorithm (`internal/ratelimiter/`)
+- **Concurrency Tests**: Thread-safety validation with 10,000 goroutines (`concurenncy_test.go`)
 - **Integration Tests**: HTTP middleware functionality (`pkg/middleware/`)
 - **End-to-End Tests**: Full server integration (`examples/test-server/`)
 
@@ -37,6 +38,13 @@ my-ratelimiter/
 1. **Red**: Write failing tests first to define expected behavior
 2. **Green**: Implement minimal code to pass tests
 3. **Refactor**: Improve design while maintaining test coverage
+
+### Latest TDD Achievement: Concurrency Support
+Recently implemented thread-safe concurrent access through rigorous TDD:
+- **Failed Test**: `TestConcurrentAccess` with 10,000 concurrent goroutines
+- **Error Discovery**: "fatal error: concurrent map writes"
+- **Solution**: Added `sync.RWMutex` for thread-safe map operations
+- **Result**: All 10,000 concurrent requests properly handled with exact rate limiting
 
 Example TDD progression:
 ```go
@@ -57,7 +65,8 @@ func TestIsRequestAllowed(t *testing.T) {
 ### Fixed Window Rate Limiter
 - **Algorithm**: Fixed time windows with request counting
 - **Storage**: In-memory map for request tracking
-- **Thread Safety**: Single-threaded design with clear concurrency considerations
+- **Thread Safety**: Full concurrent support with `sync.RWMutex` protection
+- **Performance**: Handles 10,000+ concurrent requests safely
 - **Time Handling**: Proper window expiration and reset logic
 
 ### HTTP Middleware Integration
@@ -96,11 +105,14 @@ func (m *Middleware) RateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc
 - **Test Isolation**: Each test creates fresh instances to avoid state pollution
 - **Behavior Verification**: Testing outcomes rather than implementation details
 - **Edge Case Coverage**: Window boundaries, rate limit exhaustion, time-based scenarios
+- **Concurrency Testing**: 10,000 goroutines validating thread-safety under extreme load
 - **Integration Testing**: Full HTTP request/response cycle validation
 
 ### Debugging & Problem Solving
 - **Route Conflicts**: Learned to handle HTTP mux pattern conflicts in tests
 - **Client Identification**: Solved ephemeral port issues in rate limiting
+- **Concurrency Issues**: Debugged "concurrent map writes" and implemented thread-safe solutions
+- **Lock Design**: Chose appropriate synchronization primitives (`sync.RWMutex`)
 - **State Management**: Understanding shared vs. per-request state in middleware
 
 ## 🚀 Getting Started
@@ -133,6 +145,9 @@ go test ./... -v
 
 # Run specific test suite
 go test ./internal/ratelimiter -v
+
+# Run concurrency test specifically
+go test ./internal/ratelimiter -v -run TestConcurrentAccess
 ```
 
 ## 🛠️ Technical Challenges Overcome
