@@ -1,10 +1,10 @@
-# Rate Limiter Implementation
+# Enterprise Rate Limiter with Strategy Pattern
 
-A comprehensive rate limiting system built in Go, demonstrating clean architecture, Test-Driven Development (TDD), and production-ready patterns.
+A production-ready rate limiting system built in Go, demonstrating **Strategy Pattern**, **Interface Segregation**, and **Test-Driven Development** - the same patterns used by GitHub, Netflix, and Cloudflare.
 
 ## 🎯 Project Overview
 
-This project showcases the implementation of a **Fixed Window Rate Limiter** using Go, built entirely through Test-Driven Development methodology. It demonstrates enterprise-level software engineering practices including dependency injection, interface design, and comprehensive testing strategies.
+This project showcases a **flexible, extensible rate limiter** using Go, built entirely through Test-Driven Development methodology. Features a **Strategy Pattern architecture** that supports multiple rate limiting algorithms while maintaining clean interfaces and backward compatibility.
 
 ## 🏗️ Architecture & Design Patterns
 
@@ -19,10 +19,11 @@ my-ratelimiter/
 
 ### Key Design Patterns Applied
 
-- **Dependency Injection**: Middleware accepts rate limiter interface for testability
-- **Interface Segregation**: `Limiter` interface defines minimal contract
-- **Single Responsibility**: Each package has a focused purpose
-- **Factory Pattern**: Constructor functions ensure proper initialization
+- **Strategy Pattern**: Pluggable rate limiting algorithms (Fixed Window, future: Sliding Window, Token Bucket)
+- **Interface Segregation**: Clean separation between core functionality (`RateLimitStrategy`) and optional features (`StorageChecker`)
+- **Dependency Injection**: Middleware accepts rate limiter interface for maximum testability
+- **Factory Pattern**: Constructor functions ensure proper initialization and encapsulation
+- **Single Responsibility**: Each strategy handles one algorithm, each package has focused purpose
 
 ## 🧪 Test-Driven Development (TDD)
 
@@ -39,12 +40,13 @@ my-ratelimiter/
 2. **Green**: Implement minimal code to pass tests
 3. **Refactor**: Improve design while maintaining test coverage
 
-### Latest TDD Achievement: Concurrency Support
-Recently implemented thread-safe concurrent access through rigorous TDD:
-- **Failed Test**: `TestConcurrentAccess` with 10,000 concurrent goroutines
-- **Error Discovery**: "fatal error: concurrent map writes"
-- **Solution**: Added `sync.RWMutex` for thread-safe map operations
-- **Result**: All 10,000 concurrent requests properly handled with exact rate limiting
+### Latest TDD Achievement: Strategy Pattern Refactoring
+Successfully refactored monolithic rate limiter into flexible strategy pattern through TDD:
+- **Failing Test**: `TestRateLimiterWithFixedWindowStrategy` - strategy switching capability
+- **Red Phase**: Tests failed - no strategy interface existed
+- **Green Phase**: Implemented `RateLimitStrategy` interface and `FixedWindowStrategy`
+- **Refactor Phase**: Extracted all algorithm logic into strategy while maintaining 100% backward compatibility
+- **Result**: Extensible architecture ready for multiple algorithms (Sliding Window, Token Bucket, etc.)
 
 Example TDD progression:
 ```go
@@ -62,12 +64,26 @@ func TestIsRequestAllowed(t *testing.T) {
 
 ## 🔧 Technical Implementation
 
-### Fixed Window Rate Limiter
+### Strategy Pattern Architecture
+```go
+// Core interface - minimal, focused contract
+type RateLimitStrategy interface {
+    IsRequestAllowed(identifier string) (bool, int)
+    Stop()
+}
+
+// Extensible - easy to add new algorithms
+type FixedWindowStrategy struct { /* implementation */ }
+type SlidingWindowStrategy struct { /* future */ }
+type TokenBucketStrategy struct { /* future */ }
+```
+
+### Current Implementation: Fixed Window Strategy
 - **Algorithm**: Fixed time windows with request counting
-- **Storage**: In-memory map for request tracking
+- **Storage**: In-memory map with automatic cleanup
 - **Thread Safety**: Full concurrent support with `sync.RWMutex` protection
 - **Performance**: Handles 10,000+ concurrent requests safely
-- **Time Handling**: Proper window expiration and reset logic
+- **Encapsulation**: Strategy manages own lifecycle, storage, and cleanup
 
 ### HTTP Middleware Integration
 ```go
@@ -164,21 +180,38 @@ go test ./internal/ratelimiter -v -run TestConcurrentAccess
    - Problem: HTTP route conflicts in integration tests
    - Solution: Fresh server instances and unique route paths
 
-## 📈 Future Enhancements
+## 📈 Next Phase: Multiple Strategies (In Progress)
 
-- **Distributed Rate Limiting**: Redis-based storage for multi-instance deployments
-- **Algorithm Variations**: Sliding window, token bucket, leaky bucket implementations
-- **Metrics & Monitoring**: Prometheus integration for rate limiting statistics
-- **Configuration**: YAML/JSON configuration files for flexible rate limit rules
+**Roadmap**: Currently implementing additional rate limiting algorithms through TDD:
+
+- **✅ Fixed Window**: Complete with cleanup and concurrency support
+- **🔄 Sliding Window**: More accurate rate limiting (next implementation)
+- **⏳ Token Bucket**: Burst traffic handling with sustained rates
+- **⏳ Leaky Bucket**: Traffic smoothing for consistent output rates
+
+**Future Enterprise Features**:
+- **Distributed Storage**: Redis-based storage for multi-instance deployments
+- **Metrics & Observability**: Prometheus integration with detailed rate limiting statistics
+- **Dynamic Configuration**: Hot-reloadable YAML/JSON configuration
 
 ## 🎓 Skills Demonstrated
 
-- **Go Programming**: Idiomatic Go code with proper error handling
-- **Test-Driven Development**: Comprehensive test coverage with TDD methodology
-- **Clean Architecture**: Separation of concerns and dependency management
-- **HTTP Programming**: Middleware patterns and request/response handling
-- **Problem Solving**: Debugging network-level issues and architectural challenges
-- **Documentation**: Clear technical communication for future developers
+**Design Patterns & Architecture**:
+- **Strategy Pattern**: Pluggable algorithms for flexible system design
+- **Interface Segregation**: Clean separation of concerns and focused contracts
+- **Factory Pattern**: Proper object initialization and encapsulation
+- **Clean Architecture**: Dependency inversion and testable components
+
+**Go Programming Excellence**:
+- **Concurrent Programming**: Thread-safe implementations with proper synchronization
+- **Interface Design**: Creating minimal, focused, and extensible interfaces
+- **Error Handling**: Robust error propagation and recovery strategies
+- **Testing**: Comprehensive test coverage with behavior-driven testing
+
+**Software Engineering Practices**:
+- **Test-Driven Development**: Red-Green-Refactor methodology with 100% backward compatibility
+- **Refactoring**: Major architectural changes while maintaining functionality
+- **Problem Solving**: Complex concurrency issues and network-level challenges
 
 ---
 
