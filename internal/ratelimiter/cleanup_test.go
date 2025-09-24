@@ -1,45 +1,36 @@
 package ratelimiter
 
 import (
-	"fmt"
 	"testing"
 	"time"
-    "github.com/egedolmaci/my-ratelimiter/internal/strategies"
+
+	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 )
 
-func TestCleanup(t *testing.T) {
-    strategy := strategies.NewFixedWindowStrategy(1, time.Microsecond * 100)
-    rl := NewRateLimiterWithStrategy(strategy)
-    defer rl.Stop()
+func TestStop(t *testing.T) {
+    rl := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Microsecond * 100))
+    done := make(chan bool, 1)
 
-    rl.strategy.IsRequestAllowed("user1")
+    go func() {
+        rl.Stop()
+        done <- true
+    }()
 
-    if strategy.GetStorageSize() != 1 {
-        t.Error("Should have 1 entry")
-    }
-
-    time.Sleep(time.Millisecond * 250)
-
-    if strategy.GetStorageSize() != 0 {
-        t.Error("Should be cleaned up")
+    select {
+    case <-done:
+    case <-time.After(1 * time.Second):
+        t.Fatal("Stop() hung or took too long")
     }
 }
 
 
-func TestCleanupDoesNotAffectActiveRequests(t *testing.T) {
-    strategy := strategies.NewFixedWindowStrategy(1, time.Microsecond * 100)
-    rl := NewRateLimiterWithStrategy(strategy)
-    defer rl.Stop()
+func TestStopDoesNotAffectActiveRequests(t *testing.T) {
+    rl := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Microsecond * 100))
 
-	for i := 0; i < 10; i++ {
-    	strategy.IsRequestAllowed(fmt.Sprintf("old-user-%d", i))
-	}
+	allowed, _ := rl.IsRequestAllowed("new-user-ege")
+    rl.Stop()
 
-    time.Sleep(time.Millisecond * 250)
-
-	strategy.IsRequestAllowed("new-user-ege")
-
-    if strategy.GetStorageSize() != 1 {
-        t.Error("Should have 1 entry")
+    if !allowed {
+        t.Errorf("Stop() should not affect active requests request should be allowed, got %t expected %t", allowed, true)
     }
 }

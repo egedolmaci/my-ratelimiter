@@ -1,31 +1,10 @@
 package strategies
 
-
 import (
-	"time"
+	"fmt"
 	"testing"
+	"time"
 )
-func TestIsRequestAllowed(t *testing.T) {
-	t.Run("single request", func(t *testing.T) {
-		rt := &FixedWindowStrategy{limit: 1, storage: map[string]WindowData{}, windowSize: time.Minute}
-		allowed, _ := rt.IsRequestAllowed("user123")
-
-		if !allowed {
-			t.Error("First request should be allowed")
-		}
-
-	})
-
-	t.Run("2 requests at once", func(t *testing.T) {
-		rt := &FixedWindowStrategy{limit: 1, storage: map[string]WindowData{}, windowSize: time.Minute}
-		rt.IsRequestAllowed("user123")
-		allowed, _ := rt.IsRequestAllowed("user123")
-
-		if allowed {
-			t.Error("Second request should be disallowed when limit is 1")
-		}
-	})
-}
 
 func TestFixedWindowStrategy(t *testing.T) {
 	t.Run("single request", func(t *testing.T) {
@@ -48,4 +27,38 @@ func TestFixedWindowStrategy(t *testing.T) {
 		}
 	})
 
+}
+
+func TestCleanup(t *testing.T) {
+    strategy := NewFixedWindowStrategy(1, 100 * time.Millisecond)
+    defer strategy.Stop()
+
+    strategy.IsRequestAllowed("user1")
+
+    if strategy.getStorageSize() != 1 {
+        t.Error("Should have 1 entry")
+    }
+
+    time.Sleep(time.Millisecond * 250)
+
+    if strategy.getStorageSize() != 0 {
+        t.Error("Should be cleaned up")
+    }
+}
+
+func TestCleanupDoesNotAffectActiveRequests(t *testing.T) {
+    strategy := NewFixedWindowStrategy(1, 100 * time.Millisecond)
+    defer strategy.Stop()
+
+	for i := 0; i < 10; i++ {
+    	strategy.IsRequestAllowed(fmt.Sprintf("old-user-%d", i))
+	}
+
+    time.Sleep(time.Millisecond * 250)
+
+	strategy.IsRequestAllowed("new-user-ege")
+
+    if strategy.getStorageSize() != 1 {
+        t.Error("Should have 1 entry")
+    }
 }

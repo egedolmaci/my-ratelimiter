@@ -2,6 +2,7 @@ package ratelimiter
 
 import (
 	"time"
+
 	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 )
 
@@ -12,6 +13,7 @@ type RateLimitStrategy interface {
 
 type Ratelimiter struct {
 	strategy RateLimitStrategy
+	activeRequests int
 }
 
 func NewRateLimiterWithStrategy(strategy RateLimitStrategy) *Ratelimiter {
@@ -19,7 +21,10 @@ func NewRateLimiterWithStrategy(strategy RateLimitStrategy) *Ratelimiter {
 }
 
 func (r *Ratelimiter) IsRequestAllowed(identifier string) (bool, int) {
-	return r.strategy.IsRequestAllowed(identifier)
+		
+	allowed, count := r.strategy.IsRequestAllowed(identifier)
+	r.activeRequests--
+	return allowed, count
 }
 
 func (r *Ratelimiter) Stop() {

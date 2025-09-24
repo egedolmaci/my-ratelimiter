@@ -84,7 +84,7 @@ func (f *FixedWindowStrategy) startCleanup() {
 	}
 }
 
-func (f *FixedWindowStrategy) GetStorageSize() int {
+func (f *FixedWindowStrategy) getStorageSize() int {
 	f.mu.RLock()
 	defer f.mu.RUnlock()
 	return len(f.storage)

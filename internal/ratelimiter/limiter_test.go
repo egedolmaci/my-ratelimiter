@@ -4,9 +4,26 @@ import (
 	"testing"
 	"time"
 )
-
 func TestIsRequestAllowed(t *testing.T) {
+	t.Run("single request", func(t *testing.T) {
+		rt := NewRateLimiter(1, time.Minute)
+		allowed, _ := rt.IsRequestAllowed("user123")
 
+		if !allowed {
+			t.Error("First request should be allowed")
+		}
+
+	})
+
+	t.Run("2 requests at once", func(t *testing.T) {
+		rt := NewRateLimiter(1, time.Minute)
+		rt.IsRequestAllowed("user123")
+		allowed, _ := rt.IsRequestAllowed("user123")
+
+		if allowed {
+			t.Error("Second request should be disallowed when limit is 1")
+		}
+	})
 
 	t.Run("1 request fills limit and limit opens up for another", func(t *testing.T) {
 		rt := NewRateLimiter(1, time.Millisecond*100)
@@ -34,6 +51,5 @@ func TestIsRequestAllowed(t *testing.T) {
 			t.Errorf("It must not be allowed since required time for the limit to reset has not passed")
 		}
 	})
-
 }
 
