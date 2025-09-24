@@ -8,7 +8,7 @@ import (
 
 func TestFixedWindowStrategy(t *testing.T) {
 	t.Run("single request", func(t *testing.T) {
-		rt := &FixedWindowStrategy{limit: 1, storage: map[string]WindowData{}, windowSize: time.Minute}
+  		rt := NewFixedWindowStrategy(1, 100 * time.Millisecond)
 		allowed, _ := rt.IsRequestAllowed("user123")
 	
 		if !allowed {
@@ -18,7 +18,7 @@ func TestFixedWindowStrategy(t *testing.T) {
 	})
 	
 	t.Run("2 requests at once", func(t *testing.T) {
-		rt := &FixedWindowStrategy{limit: 1, storage: map[string]WindowData{}, windowSize: time.Minute}
+  		rt := NewFixedWindowStrategy(1, 100 * time.Millisecond)
 		rt.IsRequestAllowed("user123")
 		allowed, _ := rt.IsRequestAllowed("user123")
 	
