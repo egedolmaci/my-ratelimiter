@@ -13,7 +13,6 @@ type RateLimitStrategy interface {
 
 type Ratelimiter struct {
 	strategy RateLimitStrategy
-	activeRequests int
 }
 
 func NewRateLimiterWithStrategy(strategy RateLimitStrategy) *Ratelimiter {
@@ -21,10 +20,7 @@ func NewRateLimiterWithStrategy(strategy RateLimitStrategy) *Ratelimiter {
 }
 
 func (r *Ratelimiter) IsRequestAllowed(identifier string) (bool, int) {
-		
-	allowed, count := r.strategy.IsRequestAllowed(identifier)
-	r.activeRequests--
-	return allowed, count
+	return r.strategy.IsRequestAllowed(identifier)
 }
 
 func (r *Ratelimiter) Stop() {

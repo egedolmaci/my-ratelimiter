@@ -8,8 +8,8 @@ import (
 
 func TestFixedWindowStrategy(t *testing.T) {
 	t.Run("single request", func(t *testing.T) {
-  		rt := NewFixedWindowStrategy(1, 100 * time.Millisecond)
-		allowed, _ := rt.IsRequestAllowed("user123")
+  		strategy := NewFixedWindowStrategy(1, 100 * time.Millisecond)
+		allowed, _ := strategy.IsRequestAllowed("user123")
 	
 		if !allowed {
 			t.Error("First request should be allowed")
@@ -18,9 +18,9 @@ func TestFixedWindowStrategy(t *testing.T) {
 	})
 	
 	t.Run("2 requests at once", func(t *testing.T) {
-  		rt := NewFixedWindowStrategy(1, 100 * time.Millisecond)
-		rt.IsRequestAllowed("user123")
-		allowed, _ := rt.IsRequestAllowed("user123")
+  		strategy := NewFixedWindowStrategy(1, 100 * time.Millisecond)
+		strategy.IsRequestAllowed("user123")
+		allowed, _ := strategy.IsRequestAllowed("user123")
 	
 		if allowed {
 			t.Error("Second request should be disallowed when limit is 1")
@@ -50,7 +50,7 @@ func TestCleanupDoesNotAffectActiveRequests(t *testing.T) {
     strategy := NewFixedWindowStrategy(1, 100 * time.Millisecond)
     defer strategy.Stop()
 
-	for i := 0; i < 10; i++ {
+	for i := range 10 {
     	strategy.IsRequestAllowed(fmt.Sprintf("old-user-%d", i))
 	}
 
