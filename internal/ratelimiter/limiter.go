@@ -2,6 +2,7 @@ package ratelimiter
 
 import (
 	"time"
+	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 )
 
 type RateLimitStrategy interface {
@@ -26,7 +27,7 @@ func (r *Ratelimiter) Stop() {
 }
 
 func NewRateLimiter(limit int, windowSize time.Duration) *Ratelimiter {
-	strategy := NewFixedWindowStrategy(limit, windowSize)
+	strategy := strategies.NewFixedWindowStrategy(limit, windowSize)
 	return NewRateLimiterWithStrategy(strategy)
 }
 
