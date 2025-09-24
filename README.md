@@ -25,40 +25,61 @@ my-ratelimiter/
 - **Factory Pattern**: Constructor functions ensure proper initialization and encapsulation
 - **Single Responsibility**: Each strategy handles one algorithm, each package has focused purpose
 
-## 🧪 Test-Driven Development (TDD)
+## 🧪 Advanced Test-Driven Development (TDD)
 
-**22 comprehensive tests** across 3 test suites demonstrate rigorous TDD approach:
+**25+ comprehensive tests** across 4 test suites demonstrate rigorous **Outside-In TDD** approach:
 
-### Test Coverage
-- **Unit Tests**: Core rate limiting algorithm (`internal/ratelimiter/`)
-- **Concurrency Tests**: Thread-safety validation with 10,000 goroutines (`concurenncy_test.go`)
-- **Integration Tests**: HTTP middleware functionality (`pkg/middleware/`)
+### Test Architecture & Coverage
+- **Acceptance Tests**: Public API behavior testing (`internal/ratelimiter/limiter_test.go`)
+- **Integration Tests**: Strategy integration and HTTP middleware (`pkg/middleware/`)
+- **Unit Tests**: Strategy-specific algorithms (`internal/strategies/`)
+- **Concurrency Tests**: Thread-safety validation with 10,000 goroutines
 - **End-to-End Tests**: Full server integration (`examples/test-server/`)
 
-### TDD Learning Journey
-1. **Red**: Write failing tests first to define expected behavior
-2. **Green**: Implement minimal code to pass tests
-3. **Refactor**: Improve design while maintaining test coverage
+### Outside-In TDD Methodology 🎯
+Following **acceptance-first testing** approach used by ThoughtWorks and Pivotal:
 
-### Latest TDD Achievement: Strategy Pattern Refactoring
-Successfully refactored monolithic rate limiter into flexible strategy pattern through TDD:
+```
+Acceptance Tests (RateLimiter API)  ← Start here
+        ↓
+Integration Tests (Strategy level)
+        ↓
+Unit Tests (Implementation details)  ← End here
+```
+
+**Current TDD Flow:**
+1. **RED**: Write failing acceptance test for sliding window behavior
+2. **GREEN**: Implement minimal sliding window to satisfy acceptance test
+3. **REFACTOR**: Add unit tests and optimize implementation
+
+### Latest TDD Achievements
+
+#### ✅ **Test Refactoring & Clean Architecture (Recently Completed)**
+- **Eliminated Duplication**: Removed redundant strategy tests
+- **Proper Layering**: Separated acceptance, integration, and unit tests
+- **Constructor Consistency**: All tests use proper factory methods
+- **Behavioral Focus**: Tests verify outcomes, not implementation details
+
+#### ✅ **Strategy Pattern Implementation**
 - **Failing Test**: `TestRateLimiterWithFixedWindowStrategy` - strategy switching capability
 - **Red Phase**: Tests failed - no strategy interface existed
 - **Green Phase**: Implemented `RateLimitStrategy` interface and `FixedWindowStrategy`
 - **Refactor Phase**: Extracted all algorithm logic into strategy while maintaining 100% backward compatibility
-- **Result**: Extensible architecture ready for multiple algorithms (Sliding Window, Token Bucket, etc.)
+- **Result**: Extensible architecture ready for multiple algorithms
 
-Example TDD progression:
+Example Outside-In TDD progression:
 ```go
-// Test First: Define expected behavior
-func TestIsRequestAllowed(t *testing.T) {
-    t.Run("single request", func(t *testing.T) {
-        rt := NewRateLimiter(1, time.Minute)
-        allowed, _ := rt.IsRequestAllowed("user123")
-        if !allowed {
-            t.Error("First request should be allowed")
-        }
-    })
+// ACCEPTANCE LEVEL: Test through public API
+func TestIsRequestAllowedSlidingWindowLog(t *testing.T) {
+    rl := NewRateLimiterWithStrategy(strategies.NewSlidingWindowLogStrategy(1, time.Minute))
+    allowed, _ := rl.IsRequestAllowed("user")
+    // Tests user-facing behavior
+}
+
+// UNIT LEVEL: Test strategy internals
+func TestSlidingWindowStrategy(t *testing.T) {
+    strategy := NewSlidingWindowLogStrategy(1, time.Minute)
+    // Tests algorithm-specific behavior
 }
 ```
 
@@ -180,12 +201,13 @@ go test ./internal/ratelimiter -v -run TestConcurrentAccess
    - Problem: HTTP route conflicts in integration tests
    - Solution: Fresh server instances and unique route paths
 
-## 📈 Next Phase: Multiple Strategies (In Progress)
+## 📈 Current Phase: Test Architecture & Sliding Window (In Progress)
 
-**Roadmap**: Currently implementing additional rate limiting algorithms through TDD:
+**Roadmap**: Following Outside-In TDD to implement sliding window strategy:
 
 - **✅ Fixed Window**: Complete with cleanup and concurrency support
-- **🔄 Sliding Window**: More accurate rate limiting (next implementation)
+- **✅ Test Refactoring**: Clean architecture with proper test layering completed
+- **🔄 Sliding Window**: Acceptance test written, implementation in progress
 - **⏳ Token Bucket**: Burst traffic handling with sustained rates
 - **⏳ Leaky Bucket**: Traffic smoothing for consistent output rates
 
