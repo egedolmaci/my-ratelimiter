@@ -14,6 +14,7 @@ type FixedWindowStrategy struct {
 	stopCleanup chan struct{}
 	cleanupDone chan struct{}
 	cleanupInterval time.Duration
+	timeProvider TimeProvider
 }
 
 type WindowData struct {
@@ -21,12 +22,15 @@ type WindowData struct {
 	timestamp time.Time
 }
 
+
+
 func (f *FixedWindowStrategy) IsRequestAllowed(identifier string) (bool, int) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	data, exists := f.storage[identifier]
-	if !exists || time.Now().After(data.timestamp.Add(f.windowSize)) {
-		f.storage[identifier] = WindowData{count: 1, timestamp: time.Now()}
+	currentWindow := f.timeProvider.Now().Truncate(f.windowSize)
+	if !exists || currentWindow != data.timestamp {
+		f.storage[identifier] = WindowData{count: 1, timestamp: currentWindow} 
 		return true, f.limit - 1
 	}
 
@@ -44,7 +48,7 @@ func (f *FixedWindowStrategy) Stop() {
 	<-f.cleanupDone
 }
 
-func NewFixedWindowStrategy(limit int, windowSize time.Duration) *FixedWindowStrategy {
+func NewFixedWindowStrategy(limit int, windowSize time.Duration, TimeProvider TimeProvider) *FixedWindowStrategy {
 	f := &FixedWindowStrategy{
 		limit:           limit,
 		storage:         map[string]WindowData{},
@@ -52,6 +56,7 @@ func NewFixedWindowStrategy(limit int, windowSize time.Duration) *FixedWindowStr
 		cleanupInterval: windowSize * 2,
 		stopCleanup:     make(chan struct{}),
 		cleanupDone:     make(chan struct{}),
+		timeProvider: TimeProvider,
 	}
 
 	go f.startCleanup()                                                                                                     
@@ -63,7 +68,7 @@ func (f *FixedWindowStrategy) cleanup() {
 	defer f.mu.Unlock()
 
 	for identifier, data := range f.storage {
-		if time.Now().After(data.timestamp.Add(f.windowSize)) {
+		if f.timeProvider.Now().After(data.timestamp.Add(f.windowSize)) {
 			delete(f.storage, identifier)
 		}
 	}

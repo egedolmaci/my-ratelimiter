@@ -28,7 +28,7 @@ func (r *Ratelimiter) Stop() {
 }
 
 func NewRateLimiter(limit int, windowSize time.Duration) *Ratelimiter {
-	strategy := strategies.NewFixedWindowStrategy(limit, windowSize)
+	strategy := strategies.NewFixedWIndowStrategy(limit, windowSize)
 	return NewRateLimiterWithStrategy(strategy)
 }
 
