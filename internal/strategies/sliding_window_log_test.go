@@ -7,7 +7,7 @@ import (
 
 func TestIsRequestAllowedSlidingWindowLog(t *testing.T) {
 	t.Run("should allow first request when limit is 1", func(t *testing.T) {
-		rl := NewSlidingWindowLogStrategy(1, time.Minute)
+		rl := NewSlidingWindowLogStrategy(1, time.Minute, &RealTimeProvider{})
 		defer rl.Stop()
 
 		allowed, _ := rl.IsRequestAllowed("ege")
@@ -18,7 +18,7 @@ func TestIsRequestAllowedSlidingWindowLog(t *testing.T) {
 	}) 
 
 	t.Run("should not allow second request when limit is 1", func(t *testing.T) {
-		rl := NewSlidingWindowLogStrategy(1, time.Minute)
+		rl := NewSlidingWindowLogStrategy(1, time.Minute, &RealTimeProvider{})
 		defer rl.Stop()
 
 		rl.IsRequestAllowed("ege")

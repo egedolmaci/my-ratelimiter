@@ -16,6 +16,7 @@ type Middleware struct {
 
 }
 
+
 func (m *Middleware) RateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

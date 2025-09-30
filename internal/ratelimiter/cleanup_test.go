@@ -8,7 +8,7 @@ import (
 )
 
 func TestStop(t *testing.T) {
-    rl := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Microsecond * 100))
+    rl := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Microsecond * 100, &MockTimeProvider{}))
     done := make(chan bool, 1)
 
     go func() {
@@ -25,7 +25,7 @@ func TestStop(t *testing.T) {
 
 
 func TestStopDoesNotAffectActiveRequests(t *testing.T) {
-    rl := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Microsecond * 100))
+    rl := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Microsecond * 100, &MockTimeProvider{}))
 
 	allowed, _ := rl.IsRequestAllowed("new-user-ege")
     rl.Stop()

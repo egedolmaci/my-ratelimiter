@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/egedolmaci/my-ratelimiter/internal/ratelimiter"
+	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 	"github.com/egedolmaci/my-ratelimiter/pkg/middleware"
 )
 
@@ -62,7 +63,7 @@ func TestIntegrationWithMiddleware(t *testing.T) {
 		w.Write([]byte("rate limited"))
 
 	})
-	middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(2, time.Minute)}
+	middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(2, time.Minute, &strategies.RealTimeProvider{})}
 	defer middleware.Ratelimiter.Stop()
 	ratelimitedHandler := middleware.RateLimitMiddleware(handler)
 	server.mux.HandleFunc("/test-ratelimited", ratelimitedHandler)
@@ -101,7 +102,7 @@ func TestIntegrationWithMiddlewareAdvanced(t *testing.T) {
 			w.Write([]byte("rate limited"))
 
 		})
-		middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(3, time.Minute)}
+		middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(3, time.Minute, &strategies.RealTimeProvider{})}
 		defer middleware.Ratelimiter.Stop()
 		ratelimitedHandler := middleware.RateLimitMiddleware(handler)
 		server.mux.HandleFunc("/test-ratelimited", ratelimitedHandler)

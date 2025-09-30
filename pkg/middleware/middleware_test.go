@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/egedolmaci/my-ratelimiter/internal/ratelimiter"
+	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 )
 
 func TestRateLimitMiddleware(t *testing.T) {
@@ -16,7 +17,7 @@ func TestRateLimitMiddleware(t *testing.T) {
 			w.Write([]byte("success"))
 		}
 
-		rl := ratelimiter.NewRateLimiter(1, time.Minute)
+		rl := ratelimiter.NewRateLimiter(1, time.Minute, &strategies.RealTimeProvider{})
 		defer rl.Stop()
 		middleware := Middleware{Ratelimiter: rl}
 
@@ -38,7 +39,7 @@ func TestRateLimitMiddleware(t *testing.T) {
 			w.Write([]byte("success"))
 		}
 
-		rl := ratelimiter.NewRateLimiter(1, time.Minute)
+		rl := ratelimiter.NewRateLimiter(1, time.Minute, &strategies.RealTimeProvider{})
 		defer rl.Stop()
 		middleware := Middleware{Ratelimiter: rl}
 
@@ -65,7 +66,7 @@ func TestMiddlewareLimit(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		}
 
-		rl := ratelimiter.NewRateLimiter(10, time.Minute)
+		rl := ratelimiter.NewRateLimiter(10, time.Minute, &strategies.RealTimeProvider{})
 		defer rl.Stop()
 		middleware := Middleware{Ratelimiter: rl}
 
@@ -87,7 +88,7 @@ func TestMiddlewareLimit(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		}
 
-		rl := ratelimiter.NewRateLimiter(10, time.Minute)
+		rl := ratelimiter.NewRateLimiter(10, time.Minute, &strategies.RealTimeProvider{})
 		defer rl.Stop()
 		middleware := Middleware{Ratelimiter: rl}
 

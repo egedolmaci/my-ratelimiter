@@ -3,6 +3,8 @@ package ratelimiter
 import (
 	"testing"
 	"time"
+
+	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 )
 
 
@@ -12,7 +14,7 @@ func TestConcurrentAccess(t *testing.T) {
 	iters := 10000
 	identifier := "127.0.0.1:1000"
 
-	ratelimiter := NewRateLimiter(limit, time.Second)
+	ratelimiter := NewRateLimiter(limit, time.Second, &strategies.RealTimeProvider{})
 	defer ratelimiter.Stop()
 
 	allowedChan := make(chan bool)

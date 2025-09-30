@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/egedolmaci/my-ratelimiter/internal/ratelimiter"
+	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 	"github.com/egedolmaci/my-ratelimiter/pkg/middleware"
 )
 
@@ -16,7 +17,7 @@ type Server struct {
 }
 
 func NewServer() *Server {
-	rl := ratelimiter.NewRateLimiter(10, time.Minute)
+	rl := ratelimiter.NewRateLimiter(10, time.Minute, &strategies.RealTimeProvider{})
 	defer rl.Stop()
 	s := &Server{
 		mux: http.NewServeMux(),

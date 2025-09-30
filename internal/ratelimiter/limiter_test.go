@@ -6,13 +6,27 @@ import (
 
 	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 )
+
+type MockTimeProvider struct {
+	currentTime time.Time
+}
+
+func (m *MockTimeProvider) Now() time.Time {
+	return m.currentTime
+}
+
+func (m *MockTimeProvider) Advance(duration time.Duration) {
+	m.currentTime = m.currentTime.Add(duration)
+}
+
 func TestIsRequestAllowedFixedWindow(t *testing.T) {
 	t.Run("1 request fills limit and limit opens up for another", func(t *testing.T) {
-		rt := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Millisecond*100))
+		mockTimeProvider := &MockTimeProvider{}
+		rt := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Millisecond*100, mockTimeProvider))
 		defer rt.Stop()
 		rt.IsRequestAllowed("user123")
 
-		time.Sleep(150 * time.Millisecond)
+		mockTimeProvider.Advance(150 * time.Millisecond)
 
 		allowed, _ := rt.IsRequestAllowed("user123")
 
@@ -21,11 +35,12 @@ func TestIsRequestAllowedFixedWindow(t *testing.T) {
 		}
 	})
 	t.Run("1 request fills the limit and since enough time has not passed limit is full", func(t *testing.T) {
-		rt := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Millisecond*100))
+		mockTimeProvider := &MockTimeProvider{}
+		rt := NewRateLimiterWithStrategy(strategies.NewFixedWindowStrategy(1, time.Millisecond*100, mockTimeProvider))
 		defer rt.Stop()
 		rt.IsRequestAllowed("user123")
 
-		time.Sleep(10 * time.Millisecond)
+		mockTimeProvider.Advance(10 * time.Millisecond)
 
 		allowed, _ := rt.IsRequestAllowed("user123")
 

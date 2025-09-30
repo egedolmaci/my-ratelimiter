@@ -6,13 +6,21 @@ type SlidingWindowLogStrategy struct {
 	limit int
 	windowSize time.Duration
 	storage map[string]int
+	timeProvider TimeProvider
 }
 
-func NewSlidingWindowLogStrategy(limit int, windowSize time.Duration) *SlidingWindowLogStrategy {{
+type RealTimeProvider struct {}
+
+func (r *RealTimeProvider) Now() time.Time {
+	return time.Now()
+}
+
+func NewSlidingWindowLogStrategy(limit int, windowSize time.Duration, timeProvider TimeProvider) *SlidingWindowLogStrategy {{
 	return &SlidingWindowLogStrategy{
 		limit,
 		windowSize,
 		map[string]int{},
+		&RealTimeProvider{},
 	}
 }}
 
