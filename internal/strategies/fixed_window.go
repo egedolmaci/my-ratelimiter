@@ -9,12 +9,12 @@ type FixedWindowStrategy struct {
 	limit      int
 	storage    map[string]WindowData
 	windowSize time.Duration
-	mu sync.RWMutex
+	mu         sync.RWMutex
 
-	stopCleanup chan struct{}
-	cleanupDone chan struct{}
+	stopCleanup     chan struct{}
+	cleanupDone     chan struct{}
 	cleanupInterval time.Duration
-	timeProvider TimeProvider
+	timeProvider    TimeProvider
 }
 
 type WindowData struct {
@@ -22,15 +22,13 @@ type WindowData struct {
 	timestamp time.Time
 }
 
-
-
 func (f *FixedWindowStrategy) IsRequestAllowed(identifier string) (bool, int) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	data, exists := f.storage[identifier]
 	currentWindow := f.timeProvider.Now().Truncate(f.windowSize)
 	if !exists || currentWindow != data.timestamp {
-		f.storage[identifier] = WindowData{count: 1, timestamp: currentWindow} 
+		f.storage[identifier] = WindowData{count: 1, timestamp: currentWindow}
 		return true, f.limit - 1
 	}
 
@@ -56,10 +54,10 @@ func NewFixedWindowStrategy(limit int, windowSize time.Duration, TimeProvider Ti
 		cleanupInterval: windowSize * 2,
 		stopCleanup:     make(chan struct{}),
 		cleanupDone:     make(chan struct{}),
-		timeProvider: TimeProvider,
+		timeProvider:    TimeProvider,
 	}
 
-	go f.startCleanup()                                                                                                     
+	go f.startCleanup()
 	return f
 }
 
@@ -68,7 +66,8 @@ func (f *FixedWindowStrategy) cleanup() {
 	defer f.mu.Unlock()
 
 	for identifier, data := range f.storage {
-		if f.timeProvider.Now().After(data.timestamp.Add(f.windowSize)) {
+		currentWindow := f.timeProvider.Now().Truncate(f.windowSize)
+		if currentWindow != data.timestamp {
 			delete(f.storage, identifier)
 		}
 	}
@@ -77,12 +76,12 @@ func (f *FixedWindowStrategy) cleanup() {
 func (f *FixedWindowStrategy) startCleanup() {
 	ticker := time.NewTicker(f.cleanupInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
-		case <- ticker.C:
+		case <-ticker.C:
 			f.cleanup()
-		case <- f.stopCleanup:
+		case <-f.stopCleanup:
 			close(f.cleanupDone)
 			return
 		}
@@ -94,4 +93,3 @@ func (f *FixedWindowStrategy) getStorageSize() int {
 	defer f.mu.RUnlock()
 	return len(f.storage)
 }
-

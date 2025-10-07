@@ -5,22 +5,27 @@ import (
 	"time"
 
 	"github.com/egedolmaci/my-ratelimiter/internal/ratelimiter"
-	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 	"github.com/egedolmaci/my-ratelimiter/pkg/middleware"
 )
 
 type Rule int
 
 type Server struct {
-	mux *http.ServeMux
+	mux        *http.ServeMux
 	middleware middleware.Middleware
 }
 
 func NewServer() *Server {
-	rl := ratelimiter.NewRateLimiter(10, time.Minute, &strategies.RealTimeProvider{})
+	config := ratelimiter.Config{
+		Strategy:   "fixed_window",
+		Limit:      10,
+		WindowSize: time.Minute,
+	}
+
+	rl := ratelimiter.NewRatelimiterWithConfig(config)
 	defer rl.Stop()
 	s := &Server{
-		mux: http.NewServeMux(),
+		mux:        http.NewServeMux(),
 		middleware: middleware.Middleware{Ratelimiter: rl},
 	}
 	s.routes()

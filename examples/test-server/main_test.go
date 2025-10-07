@@ -63,7 +63,7 @@ func TestIntegrationWithMiddleware(t *testing.T) {
 		w.Write([]byte("rate limited"))
 
 	})
-	middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(2, time.Minute, &strategies.RealTimeProvider{})}
+	middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(2, time.Minute, &strategies.RealTimeProvider{}, "fixed_window")}
 	defer middleware.Ratelimiter.Stop()
 	ratelimitedHandler := middleware.RateLimitMiddleware(handler)
 	server.mux.HandleFunc("/test-ratelimited", ratelimitedHandler)
@@ -89,7 +89,7 @@ func TestIntegrationWithMiddleware(t *testing.T) {
 		server.ServeHTTP(res, req)
 		server.ServeHTTP(res2, req2)
 
-		if res2.Code != http.StatusTooManyRequests{
+		if res2.Code != http.StatusTooManyRequests {
 			t.Errorf("Status must be 429 got %d", res.Code)
 		}
 	})
@@ -97,37 +97,37 @@ func TestIntegrationWithMiddleware(t *testing.T) {
 }
 
 func TestIntegrationWithMiddlewareAdvanced(t *testing.T) {
-		server := NewServer()
-		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Write([]byte("rate limited"))
+	server := NewServer()
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("rate limited"))
 
-		})
-		middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(3, time.Minute, &strategies.RealTimeProvider{})}
-		defer middleware.Ratelimiter.Stop()
-		ratelimitedHandler := middleware.RateLimitMiddleware(handler)
-		server.mux.HandleFunc("/test-ratelimited", ratelimitedHandler)
+	})
+	middleware := middleware.Middleware{Ratelimiter: ratelimiter.NewRateLimiter(3, time.Minute, &strategies.RealTimeProvider{}, "fixed_window")}
+	defer middleware.Ratelimiter.Stop()
+	ratelimitedHandler := middleware.RateLimitMiddleware(handler)
+	server.mux.HandleFunc("/test-ratelimited", ratelimitedHandler)
 
-		t.Run("3 requests to server with limit 3 4th should fail", func(t *testing.T) {
-			i := 0
-			for {
-				req := httptest.NewRequest("GET", "/test-ratelimited", nil)
-				res := httptest.NewRecorder()
-
-				server.ServeHTTP(res, req)
-				i++
-
-				if i == 3 {
-					break
-				}
-
-			}
+	t.Run("3 requests to server with limit 3 4th should fail", func(t *testing.T) {
+		i := 0
+		for {
 			req := httptest.NewRequest("GET", "/test-ratelimited", nil)
 			res := httptest.NewRecorder()
 
 			server.ServeHTTP(res, req)
+			i++
 
-			if res.Code != http.StatusTooManyRequests {
-				t.Errorf("Status must be 429 got %q", res.Code)
+			if i == 3 {
+				break
 			}
-		})
+
+		}
+		req := httptest.NewRequest("GET", "/test-ratelimited", nil)
+		res := httptest.NewRecorder()
+
+		server.ServeHTTP(res, req)
+
+		if res.Code != http.StatusTooManyRequests {
+			t.Errorf("Status must be 429 got %q", res.Code)
+		}
+	})
 }

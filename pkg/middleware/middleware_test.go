@@ -17,7 +17,7 @@ func TestRateLimitMiddleware(t *testing.T) {
 			w.Write([]byte("success"))
 		}
 
-		rl := ratelimiter.NewRateLimiter(1, time.Minute, &strategies.RealTimeProvider{})
+		rl := ratelimiter.NewRateLimiter(1, time.Minute, &strategies.RealTimeProvider{}, "fixed_window")
 		defer rl.Stop()
 		middleware := Middleware{Ratelimiter: rl}
 
@@ -32,14 +32,14 @@ func TestRateLimitMiddleware(t *testing.T) {
 		}
 
 	})
-	
+
 	t.Run("2 requests when limit is one", func(t *testing.T) {
 		handler := func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("success"))
 		}
 
-		rl := ratelimiter.NewRateLimiter(1, time.Minute, &strategies.RealTimeProvider{})
+		rl := ratelimiter.NewRateLimiter(1, time.Minute, &strategies.RealTimeProvider{}, "fixed_window")
 		defer rl.Stop()
 		middleware := Middleware{Ratelimiter: rl}
 
@@ -59,14 +59,13 @@ func TestRateLimitMiddleware(t *testing.T) {
 	})
 }
 
-
 func TestMiddlewareLimit(t *testing.T) {
 	t.Run("single request body", func(t *testing.T) {
 		handler := func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}
 
-		rl := ratelimiter.NewRateLimiter(10, time.Minute, &strategies.RealTimeProvider{})
+		rl := ratelimiter.NewRateLimiter(10, time.Minute, &strategies.RealTimeProvider{}, "fixed_window")
 		defer rl.Stop()
 		middleware := Middleware{Ratelimiter: rl}
 
@@ -88,7 +87,7 @@ func TestMiddlewareLimit(t *testing.T) {
 			w.WriteHeader(http.StatusOK)
 		}
 
-		rl := ratelimiter.NewRateLimiter(10, time.Minute, &strategies.RealTimeProvider{})
+		rl := ratelimiter.NewRateLimiter(10, time.Minute, &strategies.RealTimeProvider{}, "fixed_window")
 		defer rl.Stop()
 		middleware := Middleware{Ratelimiter: rl}
 

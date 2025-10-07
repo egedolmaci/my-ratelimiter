@@ -7,15 +7,13 @@ import (
 )
 
 type Limiter interface {
-	IsRequestAllowed(identifier string) (bool, int) 
+	IsRequestAllowed(identifier string) (bool, int)
 	Stop()
 }
 
 type Middleware struct {
 	Ratelimiter Limiter
-
 }
-
 
 func (m *Middleware) RateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 

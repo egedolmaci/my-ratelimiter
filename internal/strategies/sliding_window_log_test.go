@@ -15,7 +15,7 @@ func TestIsRequestAllowedSlidingWindowLog(t *testing.T) {
 		if !allowed {
 			t.Errorf("First request must be allowed when limit is 1 got %t expected %t", allowed, true)
 		}
-	}) 
+	})
 
 	t.Run("should not allow second request when limit is 1", func(t *testing.T) {
 		rl := NewSlidingWindowLogStrategy(1, time.Minute, &RealTimeProvider{})

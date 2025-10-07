@@ -7,32 +7,32 @@ import (
 	"github.com/egedolmaci/my-ratelimiter/internal/strategies"
 )
 
-
 func TestConcurrentAccess(t *testing.T) {
 
 	limit := 20
 	iters := 10000
 	identifier := "127.0.0.1:1000"
 
-	ratelimiter := NewRateLimiter(limit, time.Second, &strategies.RealTimeProvider{})
+	ratelimiter := NewRateLimiter(limit, time.Second, &strategies.RealTimeProvider{}, "fixed_window")
 	defer ratelimiter.Stop()
 
 	allowedChan := make(chan bool)
 	startChan := make(chan struct{})
-	isAllowedCount := 0; isNotAllowedCount := 0
-	
+	isAllowedCount := 0
+	isNotAllowedCount := 0
+
 	for range iters {
 		go func(identifier string) {
-			<- startChan
+			<-startChan
 			isAllowed, _ := ratelimiter.IsRequestAllowed(identifier)
 			allowedChan <- isAllowed
 		}(identifier)
 	}
 
 	close(startChan)
-	
+
 	for range iters {
-		isAllowedResult := <- allowedChan
+		isAllowedResult := <-allowedChan
 		if isAllowedResult {
 			isAllowedCount++
 		} else {
@@ -50,6 +50,3 @@ func TestConcurrentAccess(t *testing.T) {
 			isNotAllowedCount)
 	}
 }
-
-
-
