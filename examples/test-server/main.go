@@ -15,7 +15,7 @@ type Server struct {
 	middleware middleware.Middleware
 }
 
-func NewServer() *Server {
+func NewRatelimiter() *ratelimiter.Ratelimiter {
 	config := ratelimiter.Config{
 		Strategy:   "fixed_window",
 		Limit:      10,
@@ -23,10 +23,13 @@ func NewServer() *Server {
 	}
 
 	rl := ratelimiter.NewRatelimiterWithConfig(config)
-	defer rl.Stop()
+	return rl
+}
+
+func NewServer() *Server {
 	s := &Server{
 		mux:        http.NewServeMux(),
-		middleware: middleware.Middleware{Ratelimiter: rl},
+		middleware: middleware.Middleware{Ratelimiter: NewRatelimiter()},
 	}
 	s.routes()
 	return s

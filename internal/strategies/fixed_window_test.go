@@ -80,3 +80,15 @@ func TestCleanupDoesNotAffectActiveRequests(t *testing.T) {
 	}
 
 }
+
+func BenchmarkFixedWindow_AllowedRequests(b *testing.B) {
+	mockTime := &MockTimeProvider{currentTime: time.Now()}
+	strategy := NewFixedWindowStrategy(1000, time.Minute, mockTime)
+	defer strategy.Stop()
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+
+	}
+}

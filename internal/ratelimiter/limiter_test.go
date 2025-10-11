@@ -122,7 +122,7 @@ func TestIsRequestAllowedSlidingWindowLog(t *testing.T) {
 }
 
 func TestRateLimiterWithConfig(t *testing.T) {
-	t.Run("ratelimiter with config", func(t *testing.T) {
+	t.Run("ratelimiter with fixed_window config", func(t *testing.T) {
 		config := Config{
 			Strategy:   "fixed_window",
 			Limit:      10,
@@ -141,6 +141,22 @@ func TestRateLimiterWithConfig(t *testing.T) {
 		allowed, _ := rl.IsRequestAllowed("ege")
 		if allowed {
 			t.Errorf("11th request should not be allowed")
+		}
+
+	})
+
+	t.Run("ratelimtier with sliding_window config", func(t *testing.T) {
+		config := Config{
+			Strategy:   "sliding_window_log",
+			Limit:      10,
+			WindowSize: time.Minute,
+		}
+
+		rl := NewRatelimiterWithConfig(config)
+		allowed, _ := rl.IsRequestAllowed("ege")
+
+		if !allowed {
+			t.Errorf("request should be allowed")
 		}
 
 	})

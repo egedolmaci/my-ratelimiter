@@ -41,7 +41,7 @@ func NewRateLimiter(limit int, windowSize time.Duration, timeProvider strategies
 	var strategy RateLimitStrategy
 	if strategyName == "fixed_window" {
 		strategy = strategies.NewFixedWindowStrategy(limit, windowSize, timeProvider)
-	} else if strategyName == "sliding_window" {
+	} else if strategyName == "sliding_window_log" {
 		strategy = strategies.NewSlidingWindowLogStrategy(limit, windowSize, timeProvider)
 	}
 

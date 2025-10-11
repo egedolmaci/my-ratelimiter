@@ -99,12 +99,21 @@ type SlidingWindowStrategy struct { /* future */ }
 type TokenBucketStrategy struct { /* future */ }
 ```
 
-### Current Implementation: Fixed Window Strategy
+### Implemented Strategies
+
+#### 1. Fixed Window Strategy
 - **Algorithm**: Fixed time windows with request counting
 - **Storage**: In-memory map with automatic cleanup
 - **Thread Safety**: Full concurrent support with `sync.RWMutex` protection
 - **Performance**: Handles 10,000+ concurrent requests safely
-- **Encapsulation**: Strategy manages own lifecycle, storage, and cleanup
+- **Trade-off**: Fast but allows bursts at window boundaries
+
+#### 2. Sliding Window Log Strategy
+- **Algorithm**: Tracks individual request timestamps for precise sliding behavior
+- **Storage**: Timestamp array per identifier with automatic cleanup
+- **Accuracy**: Most accurate - no boundary issues
+- **Trade-off**: Higher memory usage (stores every request timestamp)
+- **Use Case**: When precision is more important than memory efficiency
 
 ### HTTP Middleware Integration
 ```go
@@ -201,13 +210,15 @@ go test ./internal/ratelimiter -v -run TestConcurrentAccess
    - Problem: HTTP route conflicts in integration tests
    - Solution: Fresh server instances and unique route paths
 
-## 📈 Current Phase: Test Architecture & Sliding Window (In Progress)
+## 📈 Current Phase: Sliding Window Counter Strategy (In Progress)
 
-**Roadmap**: Following Outside-In TDD to implement sliding window strategy:
+**Roadmap**: Following Outside-In TDD to implement multiple rate limiting strategies:
 
 - **✅ Fixed Window**: Complete with cleanup and concurrency support
 - **✅ Test Refactoring**: Clean architecture with proper test layering completed
-- **🔄 Sliding Window**: Acceptance test written, implementation in progress
+- **✅ Sliding Window Log**: Timestamp-based tracking with natural sliding behavior
+- **✅ Configuration System**: Type-safe config with strategy selection
+- **🔄 Sliding Window Counter**: Hybrid algorithm for balanced accuracy/performance
 - **⏳ Token Bucket**: Burst traffic handling with sustained rates
 - **⏳ Leaky Bucket**: Traffic smoothing for consistent output rates
 
