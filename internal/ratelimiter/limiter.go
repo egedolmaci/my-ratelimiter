@@ -21,7 +21,7 @@ type Config struct {
 	WindowSize time.Duration
 }
 
-func NewRatelimiterWithConfig(config Config) *Ratelimiter {
+func NewRatelimiterWithConfig(config *Config) *Ratelimiter {
 	return NewRateLimiter(config.Limit, config.WindowSize, &strategies.RealTimeProvider{}, config.Strategy)
 }
 
@@ -43,6 +43,8 @@ func NewRateLimiter(limit int, windowSize time.Duration, timeProvider strategies
 		strategy = strategies.NewFixedWindowStrategy(limit, windowSize, timeProvider)
 	} else if strategyName == "sliding_window_log" {
 		strategy = strategies.NewSlidingWindowLogStrategy(limit, windowSize, timeProvider)
+	} else if strategyName == "sliding_window_counter" {
+		strategy = strategies.NewSlidingWindowCountStrategy(limit, windowSize, timeProvider)
 	}
 
 	return NewRateLimiterWithStrategy(strategy)

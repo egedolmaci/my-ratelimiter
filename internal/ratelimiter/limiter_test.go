@@ -123,7 +123,7 @@ func TestIsRequestAllowedSlidingWindowLog(t *testing.T) {
 
 func TestRateLimiterWithConfig(t *testing.T) {
 	t.Run("ratelimiter with fixed_window config", func(t *testing.T) {
-		config := Config{
+		config := &Config{
 			Strategy:   "fixed_window",
 			Limit:      10,
 			WindowSize: time.Minute,
@@ -146,7 +146,7 @@ func TestRateLimiterWithConfig(t *testing.T) {
 	})
 
 	t.Run("ratelimtier with sliding_window config", func(t *testing.T) {
-		config := Config{
+		config := &Config{
 			Strategy:   "sliding_window_log",
 			Limit:      10,
 			WindowSize: time.Minute,
@@ -160,4 +160,29 @@ func TestRateLimiterWithConfig(t *testing.T) {
 		}
 
 	})
+}
+
+func TestIsRequestAllowedSlidingWindowCount(t *testing.T) {
+	mockTimeProvider := &MockTimeProvider{}
+	strategy := strategies.NewSlidingWindowCountStrategy(10, time.Minute, mockTimeProvider)
+	rl := NewRateLimiterWithStrategy(strategy)
+	defer rl.Stop()
+
+	mockTimeProvider.Advance(55 * time.Second)
+
+	for range 10 {
+		rl.IsRequestAllowed("ege")
+	}
+
+	mockTimeProvider.Advance(10 * time.Second)
+
+	for range 9 {
+		rl.IsRequestAllowed("ege")
+	}
+
+	allowed, count := rl.IsRequestAllowed("ege")
+
+	if allowed {
+		t.Errorf("Burst around boundaries should not be allowed got %t, %d", allowed, count)
+	}
 }

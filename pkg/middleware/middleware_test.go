@@ -109,3 +109,30 @@ func TestMiddlewareLimit(t *testing.T) {
 		}
 	})
 }
+
+func TestMiddlewareWithSlidingWindowCounter(t *testing.T) {
+	t.Run("it should not allow near boundary bursts", func(t *testing.T) {
+		config := &ratelimiter.Config{
+			Strategy: "sliding_window_counter",
+			Limit: 10,
+			WindowSize: time.Minute,
+		}
+
+		rl := ratelimiter.NewRatelimiterWithConfig(config)
+		middleware := Middleware{Ratelimiter: rl}
+
+		handler := func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}
+
+		next := middleware.RateLimitMiddleware(handler)
+
+		request := httptest.NewRequest("GET", "/test", nil)
+		response := httptest.NewRecorder()
+		next.ServeHTTP(response, request)
+
+		if response.Code != 200 {
+			t.Errorf("Request should be allowed got %d", response.Code)
+		}
+	})
+}
