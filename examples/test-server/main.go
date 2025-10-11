@@ -16,7 +16,7 @@ type Server struct {
 }
 
 func NewRatelimiter() *ratelimiter.Ratelimiter {
-	config := ratelimiter.Config{
+	config := &ratelimiter.Config{
 		Strategy:   "fixed_window",
 		Limit:      10,
 		WindowSize: time.Minute,
